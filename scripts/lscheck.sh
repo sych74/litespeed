@@ -6,7 +6,7 @@ SERVICE_ADC="litespeedadc"
 LOG_FILE="/var/log/messages"  # Specify the correct log file path
 FLAG_FILE="/tmp/litespeed_license_issue.flag"
 JEM_API_URL="https://your-jem-api-endpoint"  # Specify the correct URL
-LOG_OUTPUT="/var/log/litespeed_check.log"
+LOG_OUTPUT="/var/log/litespeed_monitor.log"
 CURRENT_TIME=$(date +%s)
 TIME_THRESHOLD=1800  # 30 minutes in seconds
 
@@ -15,13 +15,20 @@ log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_OUTPUT"
 }
 
-# Determine Litespeed Web Server or Litespeed ADC
-if systemctl list-units --type=service | grep -q "$SERVICE_LSWS"; then
-    SERVICE="$SERVICE_LSWS"
-elif systemctl list-units --type=service | grep -q "$SERVICE_ADC"; then
-    SERVICE="$SERVICE_ADC"
+# Determine Litespeed type from /etc/jelastic/metainf.conf
+META_INF_FILE="/etc/jelastic/metainf.conf"
+if [[ -f "$META_INF_FILE" ]]; then
+    COMPUTE_TYPE=$(grep "^COMPUTE_TYPE=" "$META_INF_FILE" | cut -d'=' -f2)
+    if [[ "$COMPUTE_TYPE" == "litespeed" || "$COMPUTE_TYPE" == "LLSMP" ]]; then
+        SERVICE="$SERVICE_LSWS"
+    elif [[ "$COMPUTE_TYPE" == "litespeed_adc" ]]; then
+        SERVICE="$SERVICE_ADC"
+    else
+        log "Unknown COMPUTE_TYPE: $COMPUTE_TYPE. Exiting."
+        exit 1
+    fi
 else
-    log "Litespeed Web Server or Litespeed ADC not found. Exiting."
+    log "Meta information file not found. Exiting."
     exit 1
 fi
 
@@ -35,7 +42,7 @@ fi
 # If the process is not running, try to start it
 log "Process $SERVICE is not running. Attempting to start."
 systemctl start "$SERVICE"
-sleep 5  # Give some time for startup
+sleep 10  # Give some time for startup
 
 # Check if the process started successfully
 if systemctl is-active --quiet "$SERVICE"; then
