@@ -84,6 +84,14 @@ actions:
           text = "There is an issue with the LiteSpeed license for ${env.envName}. Please check the license settings and try again.";
       return api.message.email.Send(appid, signature, null, '${user.email}', '${user.email}', title, text);
 
+  setupLicenseMonitor:
+    cmd[${this.nodeGroup}]: |-
+      curl -o /usr/local/bin/lsmonitor.sh ${this.baseUrl}/lsmonitor.sh;
+      chmod +x /usr/local/bin/lsmonitor.sh;
+      if ! crontab -l | grep -q '/usr/local/bin/lsmonitor.sh'; then
+        (crontab -l; echo "*/30 * * * * curl -o /usr/local/bin/lsmonitor.sh ${this.baseUrl}/lsmonitor.sh && chmod +x /usr/local/bin/lsmonitor.sh && /usr/local/bin/lsmonitor.sh") | crontab -;
+      fi
+
   updateAdminEmails:
     cmd[${this.nodeGroup}]: |-
       CURRENT_VALUE=$(xmlstarlet sel -t -v "${this.configSection}/adminEmails" ${this.serverConfig})
