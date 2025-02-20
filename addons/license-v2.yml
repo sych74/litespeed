@@ -90,8 +90,9 @@ actions:
       curl -o /usr/local/bin/lsmonitor.sh ${this.baseUrl}/lsmonitor.sh;
       chmod +x /usr/local/bin/lsmonitor.sh;
       if ! crontab -l | grep -q '/usr/local/bin/lsmonitor.sh'; then
-        (crontab -l; echo "*/30 * * * * curl -o /usr/local/bin/lsmonitor.sh ${this.baseUrl}/lsmonitor.sh && chmod +x /usr/local/bin/lsmonitor.sh && /usr/local/bin/lsmonitor.sh") | crontab -;
+        (crontab -l; echo "*/30 * * * * curl -o /usr/local/bin/lsmonitor.sh ${baseUrl}/lsmonitor.sh && chmod +x /usr/local/bin/lsmonitor.sh && /usr/local/bin/lsmonitor.sh") | crontab -;
       fi
+    user: root
 
   updateAdminEmails:
     cmd[${this.nodeGroup}]: |-
