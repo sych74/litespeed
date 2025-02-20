@@ -57,11 +57,11 @@ if [[ -x "$LICENSE_CHECK" ]]; then
             $JEM_API_CALL
             touch "$FLAG_LICENSE_ISSUE"
         else
-            log "License issue already recorded, flag exists. Doing nothing."
+            log "License issue already recorded. Doing nothing."
         fi
         exit 0
     else
-        log "License check via $LICENSE_CHECK -V passed. No issues detected. Creating service stop flag."
+        log " Process is stopped. License check via $LICENSE_CHECK -V passed. No issues detected."
         touch "$FLAG_SERVICE_STOPPED"
     fi
 else
