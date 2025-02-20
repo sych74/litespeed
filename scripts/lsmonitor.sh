@@ -50,8 +50,29 @@ if [[ -f "$FLAG_SERVICE_STOPPED" ]]; then
 fi
 
 if [[ -x "$LICENSE_CHECK" ]]; then
-    if "$LICENSE_CHECK" -V 2>&1 | grep -q "Invalid license"; then
-        log "License issue detected via $LICENSE_CHECK -V."
+    LICENSE_OUTPUT=$("$LICENSE_CHECK" -V 2>&1)
+    if echo "$LICENSE_OUTPUT" | grep -q "Invalid license"; then
+        log "License issue detected via $LICENSE_CHECK -V: Invalid license."
+        if [[ ! -f "$FLAG_LICENSE_ISSUE" ]]; then
+            log "Calling JEM API due to license issue."
+            $JEM_API_CALL
+            touch "$FLAG_LICENSE_ISSUE"
+        else
+            log "License issue already recorded. Doing nothing."
+        fi
+        exit 0
+    elif echo "$LICENSE_OUTPUT" | grep -q "Serial number is not active"; then
+        log "License issue detected via $LICENSE_CHECK -V: Serial number is not active."
+        if [[ ! -f "$FLAG_LICENSE_ISSUE" ]]; then
+            log "Calling JEM API due to license issue."
+            $JEM_API_CALL
+            touch "$FLAG_LICENSE_ISSUE"
+        else
+            log "License issue already recorded. Doing nothing."
+        fi
+        exit 0
+    elif echo "$LICENSE_OUTPUT" | grep -q "License key operation failure"; then
+        log "License issue detected via $LICENSE_CHECK -V: License key operation failure."
         if [[ ! -f "$FLAG_LICENSE_ISSUE" ]]; then
             log "Calling JEM API due to license issue."
             $JEM_API_CALL
@@ -61,7 +82,7 @@ if [[ -x "$LICENSE_CHECK" ]]; then
         fi
         exit 0
     else
-        log " Process is stopped. License check via $LICENSE_CHECK -V passed. No issues detected."
+        log "Process is stopped. License check via $LICENSE_CHECK -V passed. No issues detected."
         touch "$FLAG_SERVICE_STOPPED"
     fi
 else
