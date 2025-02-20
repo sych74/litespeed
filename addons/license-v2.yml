@@ -86,7 +86,7 @@ actions:
       return api.message.email.Send(appid, signature, null, '${user.email}', '${user.email}', title, text);
 
   setupLicenseMonitor:
-    cmd[${this.nodeGroup}]: |-
+    cmd[${targetNodes.nodeGroup}]: |-
       curl -o /usr/local/bin/lsmonitor.sh ${this.baseUrl}/lsmonitor.sh;
       chmod +x /usr/local/bin/lsmonitor.sh;
       if ! crontab -l | grep -q '/usr/local/bin/lsmonitor.sh'; then
