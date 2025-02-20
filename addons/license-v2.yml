@@ -82,7 +82,7 @@ actions:
   sendLicenseIssueEmail:
     script: |-
       var title = "LiteSpeed License Issue for ${env.envName}",
-          text = "There is an issue with the LiteSpeed license for ${env.envName}. Please check the license settings and try again.";
+          text = "There is an issue with the LiteSpeed license for ${env.envName}. Please check /var/www/logs/monitor.log for details.";
       return api.message.email.Send(appid, signature, null, '${user.email}', '${user.email}', title, text);
 
   setupLicenseMonitor:
