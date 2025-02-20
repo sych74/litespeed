@@ -17,6 +17,20 @@ log() {
     sudo -u $USER bash -c "echo \"$(date '+%Y-%m-%d %H:%M:%S') - $1\" | tee -a \"$LOG_OUTPUT\""
 }
 
+# Function to handle license issues
+handle_license_issue() {
+    local issue_message="$1"
+    log "License issue detected via $LICENSE_CHECK -V: $issue_message."
+    if [[ ! -f "$FLAG_LICENSE_ISSUE" ]]; then
+        log "Calling JEM API due to license issue."
+        $JEM_API_CALL
+        touch "$FLAG_LICENSE_ISSUE"
+    else
+        log "License issue already recorded. Doing nothing."
+    fi
+    exit 0
+}
+
 # Determine Litespeed type from /etc/jelastic/metainf.conf
 META_INF_FILE="/etc/jelastic/metainf.conf"
 if [[ -f "$META_INF_FILE" ]]; then
@@ -52,35 +66,15 @@ fi
 if [[ -x "$LICENSE_CHECK" ]]; then
     LICENSE_OUTPUT=$("$LICENSE_CHECK" -V 2>&1)
     if echo "$LICENSE_OUTPUT" | grep -q "Invalid license"; then
-        log "License issue detected via $LICENSE_CHECK -V: Invalid license."
-        if [[ ! -f "$FLAG_LICENSE_ISSUE" ]]; then
-            log "Calling JEM API due to license issue."
-            $JEM_API_CALL
-            touch "$FLAG_LICENSE_ISSUE"
-        else
-            log "License issue already recorded. Doing nothing."
-        fi
-        exit 0
+        handle_license_issue "Invalid license"
     elif echo "$LICENSE_OUTPUT" | grep -q "Serial number is not active"; then
-        log "License issue detected via $LICENSE_CHECK -V: Serial number is not active."
-        if [[ ! -f "$FLAG_LICENSE_ISSUE" ]]; then
-            log "Calling JEM API due to license issue."
-            $JEM_API_CALL
-            touch "$FLAG_LICENSE_ISSUE"
-        else
-            log "License issue already recorded. Doing nothing."
-        fi
-        exit 0
+        handle_license_issue "Serial number is not active"
     elif echo "$LICENSE_OUTPUT" | grep -q "License key operation failure"; then
-        log "License issue detected via $LICENSE_CHECK -V: License key operation failure."
-        if [[ ! -f "$FLAG_LICENSE_ISSUE" ]]; then
-            log "Calling JEM API due to license issue."
-            $JEM_API_CALL
-            touch "$FLAG_LICENSE_ISSUE"
-        else
-            log "License issue already recorded. Doing nothing."
-        fi
-        exit 0
+        handle_license_issue "License key operation failure"
+    elif echo "$LICENSE_OUTPUT" | grep -q "Invalid serial number"; then
+        handle_license_issue "Invalid serial number"
+    elif echo "$LICENSE_OUTPUT" | grep -q "serial.no is missing"; then
+        handle_license_issue "serial.no is missing"
     else
         log "Process is stopped. License check via $LICENSE_CHECK -V passed. No issues detected."
         touch "$FLAG_SERVICE_STOPPED"
