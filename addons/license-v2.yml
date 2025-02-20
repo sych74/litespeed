@@ -46,6 +46,7 @@ onInstall:
           configSection: "loadBalancerConfig"
       - updateUseClientIPinHeader
   - updateLicense
+  - setupLicenseMonitor
 
 onCustomNodeEvent [name:license-issue]: sendLicenseIssueEmail
 
