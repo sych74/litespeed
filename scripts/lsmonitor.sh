@@ -38,7 +38,7 @@ fi
 
 # Check if the process is running
 if systemctl is-active --quiet "$SERVICE"; then
-    log "Process $SERVICE is running. Removing flags."
+    log "Process $SERVICE is running."
     rm -f "$FLAG_LICENSE_ISSUE" "$FLAG_SERVICE_STOPPED"
     exit 0
 fi
@@ -61,7 +61,7 @@ if [[ -x "$LICENSE_CHECK" ]]; then
         fi
         exit 0
     else
-        log "License check via $LICENSE_CHECK -V passed. No issues detected. Creating stop flag."
+        log "License check via $LICENSE_CHECK -V passed. No issues detected. Creating service stop flag."
         touch "$FLAG_SERVICE_STOPPED"
     fi
 else
