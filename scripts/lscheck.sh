@@ -42,6 +42,7 @@ fi
 # If the process is not running, try to start it
 log "Process $SERVICE is not running. Attempting to start."
 systemctl start "$SERVICE"
+# This script pauses execution for 10 seconds to allow sufficient time for a service or process to start up.
 sleep 10  # Give some time for startup
 
 # Check if the process started successfully
