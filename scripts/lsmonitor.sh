@@ -14,7 +14,7 @@ USER="litespeed"
 
 # Log function
 log() {
-    su -c "echo \"$(date '+%Y-%m-%d %H:%M:%S') - $1\" | tee -a \"$LOG_OUTPUT\"" $USER
+    sudo -u $USER bash -c "echo \"$(date '+%Y-%m-%d %H:%M:%S') - $1\" | tee -a \"$LOG_OUTPUT\""
 }
 
 # Determine Litespeed type from /etc/jelastic/metainf.conf
