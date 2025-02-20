@@ -47,6 +47,8 @@ onInstall:
       - updateUseClientIPinHeader
   - updateLicense
 
+onCustomNodeEvent [name:license-issue]: sendLicenseIssueEmail
+
 onAfterStart: updateLicense
 
 onBeforeSetCloudletCount[cp]:
@@ -76,6 +78,12 @@ onAfterDetachExtIp[cp]:
   if ("${nodes.cp.nodeType}".indexOf("litespeedadc") > -1): updateUseClientIPinHeader
 
 actions:
+  sendLicenseIssueEmail:
+    script: |-
+      var title = "LiteSpeed License Issue for ${env.envName}",
+          text = "There is an issue with the LiteSpeed license for ${env.envName}. Please check the license settings and try again.";
+      return api.message.email.Send(appid, signature, null, '${user.email}', '${user.email}', title, text);
+
   updateAdminEmails:
     cmd[${this.nodeGroup}]: |-
       CURRENT_VALUE=$(xmlstarlet sel -t -v "${this.configSection}/adminEmails" ${this.serverConfig})
